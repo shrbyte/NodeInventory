@@ -1,11 +1,7 @@
-
+// shrbyte, 2026.
 
 
 #include "ItemDataAsset.h"
 
-
-// Sets default values
 UItemDataAsset::UItemDataAsset()
-{
-
-}
+{}
