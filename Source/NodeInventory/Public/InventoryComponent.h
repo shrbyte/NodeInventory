@@ -32,7 +32,7 @@ public:
 	* Map used client-side in inventory graph reconstruction method.
 	* Stores pairs of node guids and pointers for quick search.
 	*/
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TMap<FGuid, TObjectPtr<class UInventoryNode>> NodeMap;
 
 public:

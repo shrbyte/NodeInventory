@@ -49,9 +49,6 @@ public:
 	FGuid NodeGuid;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
-	FIntPoint Location = {0,0};
-
-	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<UInventoryNode> ParentNode = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")

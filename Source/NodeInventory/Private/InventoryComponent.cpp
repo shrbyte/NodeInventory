@@ -109,16 +109,23 @@ bool UInventoryComponent::AttachItemToGrid(UInventoryNode* ParentNode, int32 Gri
 		return false;
 	}
 
-	int32 TargetSizeX = bRotate ? ChildNode->ItemData->SizeY : ChildNode->ItemData->SizeX;
-	int32 TargetSizeY = bRotate ? ChildNode->ItemData->SizeX : ChildNode->ItemData->SizeY;
+	const int32 TargetSizeX = bRotate ? ChildNode->ItemData->SizeY : ChildNode->ItemData->SizeX;
+	const int32 TargetSizeY = bRotate ? ChildNode->ItemData->SizeX : ChildNode->ItemData->SizeY;
 
 	if (not IsValidGridPlacement(ParentNode, GridIndex, TopLeftX, TopLeftY, TargetSizeX, TargetSizeY, ChildNode))
 	{
 		return false;
 	}
 
-	DetachItem(ChildNode);
-	RootNodes.Remove(ChildNode);
+	const TObjectPtr<UInventoryComponent> ParentOwningComponent = ParentNode->GetTypedOuter<UInventoryComponent>();
+	const TObjectPtr<UInventoryComponent> ChildOwningComponent	= ChildNode->GetTypedOuter<UInventoryComponent>();
+
+	if (not IsValid(ParentOwningComponent) or not IsValid(ChildOwningComponent))
+	{
+		return false;
+	}
+
+	ChildOwningComponent->DetachItem(ChildNode);
 
 	FGridPlacementData NewPlacement;
 	NewPlacement.GridIndex = GridIndex;
@@ -128,9 +135,12 @@ bool UInventoryComponent::AttachItemToGrid(UInventoryNode* ParentNode, int32 Gri
 
 	ChildNode->ParentNode = ParentNode;
 	ChildNode->PlacementInParent = NewPlacement;
+	ChildNode->Rename(nullptr, ParentOwningComponent);
 	ParentNode->ChildNodes.Add(ChildNode, NewPlacement);
+	ParentOwningComponent->NodeMap.Add(ChildNode->NodeGuid, ChildNode);
 
-	RefreshNetworkGraph_Server();
+	ParentOwningComponent->RefreshNetworkGraph_Server();
+	ChildOwningComponent->RefreshNetworkGraph_Server();
 	return true;
 }
 
@@ -144,17 +154,23 @@ void UInventoryComponent::DetachItem(UInventoryNode* ChildNode)
 	{
 		return;
 	}
-	if (not ChildNode->ParentNode)
+
+	TObjectPtr<UInventoryComponent> ParentOwningComponent = ChildNode->GetTypedOuter<UInventoryComponent>();
+	if (IsValid(ParentOwningComponent))
 	{
-		return;
+		ParentOwningComponent->RootNodes.Remove(ChildNode);
+		ParentOwningComponent->NodeMap.Remove(ChildNode->NodeGuid);
+	}
+	TObjectPtr<UInventoryNode> OldParent = ChildNode->ParentNode;
+	if (IsValid(OldParent))
+	{
+		OldParent->ChildNodes.Remove(ChildNode);
 	}
 
-	TObjectPtr<UInventoryNode> OldParent = ChildNode->ParentNode;
-	OldParent->ChildNodes.Remove(ChildNode);
-
 	ChildNode->ParentNode = nullptr;
+	ChildNode->PlacementInParent = FGridPlacementData{};
 
-	RefreshNetworkGraph_Server();
+	ParentOwningComponent->RefreshNetworkGraph_Server();
 }
 
 int32 UInventoryComponent::CountTotalItemsInSubtree(UInventoryNode* StartNode) const
