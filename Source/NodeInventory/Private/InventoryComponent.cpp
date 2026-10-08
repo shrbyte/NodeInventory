@@ -188,6 +188,8 @@ int32 UInventoryComponent::CountTotalItemsInSubtree(UInventoryNode* StartNode) c
 	return Count;
 }
 
+#pragma region Network Graph Refresh
+
 void UInventoryComponent::OnNetworkGraphUpdated()
 {
 	RefreshNetworkGraph_Client();
@@ -305,6 +307,10 @@ void UInventoryComponent::RefreshNetworkGraph_Client()
 	}
 }
 
+#pragma endregion
+
+#pragma region Client-side RPCs wrappers.
+
 void UInventoryComponent::K2_AttachItemToNode_Implementation(UInventoryNode* ParentNode, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, UInventoryNode* ChildNode)
 {
 	if (ParentNode == nullptr or ChildNode == nullptr)
@@ -324,6 +330,10 @@ void UInventoryComponent::K2_DetachItem_Implementation(UInventoryNode* ChildNode
 
 	Server_DetachItem(ChildNode->NodeGuid);
 }
+
+#pragma endregion
+
+#pragma region Server RPC
 
 void UInventoryComponent::Server_AttachItemToNode_Implementation(FGuid ParentNodeGuid, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, FGuid ChildNodeGuid)
 {
@@ -351,3 +361,5 @@ void UInventoryComponent::Server_DetachItem_Implementation(FGuid ChildNodeGuid)
 
 	DetachItem(ChildNode);
 }
+
+#pragma endregion

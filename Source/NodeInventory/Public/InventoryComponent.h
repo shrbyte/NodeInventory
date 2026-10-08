@@ -35,6 +35,35 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TMap<FGuid, TObjectPtr<class UInventoryNode>> NodeMap;
 
+protected:
+
+	/**
+	* Replicated, packed via FFastArraySerializer, version of inventory graph.
+	* Used only to synchronize clients state of inventory graph with server.
+	*/
+	UPROPERTY(ReplicatedUsing = OnNetworkGraphUpdated)
+	FInventoryNetworkGraph NetworkGraph;
+
+	/**
+	* NetworkGraph replication callback. (OnRep_*)
+	* Calls RefreshNetworkGraph_Client() to reproduce inventory graph locally out of NetworkGraph structure which stores packed TArray representation of inventory.
+	*/
+	UFUNCTION()
+	void OnNetworkGraphUpdated();
+
+private:
+	/**
+	* Server-side method to update NetworkGraph field.
+	* Shrinks inventory graph into TArray using FFastArraySerializer for network optimization.
+	*/
+	void RefreshNetworkGraph_Server();
+
+	/**
+	* Client-side method called via OnNetworkGraphUpdated().
+	* Unpacks NetworkGraph locally to reproduce server version of inventory graph.
+	*/
+	void RefreshNetworkGraph_Client();
+
 public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -103,33 +132,6 @@ public:
 	*/
 	UFUNCTION(BLueprintPure, Category = "Inventory")
 	int32 CountTotalItemsInSubtree(class UInventoryNode* StartNode) const;
-
-	/**
-	* Replicated, packed via FFastArraySerializer, version of inventory graph.
-	* Used only to synchronize clients state of inventory graph with server.
-	*/
-	UPROPERTY(ReplicatedUsing = OnNetworkGraphUpdated)
-	FInventoryNetworkGraph NetworkGraph;
-
-	/**
-	* NetworkGraph replication callback. (OnRep_*)
-	* Calls RefreshNetworkGraph_Client() to reproduce inventory graph locally out of NetworkGraph structure which stores packed TArray representation of inventory.
-	*/
-	UFUNCTION()
-	void OnNetworkGraphUpdated();
-
-private:
-	/**
-	* Server-side method to update NetworkGraph field.
-	* Shrinks inventory graph into TArray using FFastArraySerializer for network optimization.
-	*/
-	void RefreshNetworkGraph_Server();
-	
-	/**
-	* Client-side method called via OnNetworkGraphUpdated().
-	* Unpacks NetworkGraph locally to reproduce server version of inventory graph.
-	*/
-	void RefreshNetworkGraph_Client();
 
 public:
 
