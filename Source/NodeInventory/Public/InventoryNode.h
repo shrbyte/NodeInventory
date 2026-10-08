@@ -31,7 +31,7 @@ public:
 
 };
 
-UCLASS()
+UCLASS(ClassGroup = (Inventory), BlueprintType)
 class NODEINVENTORY_API UInventoryNode : public UObject
 {
 	GENERATED_BODY()

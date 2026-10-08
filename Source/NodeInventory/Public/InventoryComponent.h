@@ -9,7 +9,7 @@
 #include "InventoryComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Inventory), meta=(BlueprintSpawnableComponent) )
 class NODEINVENTORY_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -51,16 +51,16 @@ public:
 	* @param ItemData Pointer to data asset, defined in editor.
 	* @return Pointer to newly created node.
 	*/
-	UFUNCTION(BLueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	class UInventoryNode* CreateNewNode(class UItemDataAsset* ItemData);
 
-	UFUNCTION(BLueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool IsValidGridPlacement(class UInventoryNode* ParentNode, int32 GridIndex, int32 X, int32 Y, int32 SizeX, int32 SizeY, class UInventoryNode* IgnoreNode) const;
 
-	UFUNCTION(BLueprintCallable, Category = "Inventory")
+	UFUNCTION(Category = "Inventory")
 	bool AttachItemToGrid(class UInventoryNode* ParentNode, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, UInventoryNode* ChildNode);
 
-	UFUNCTION(BLueprintCallable, Category = "Inventory")
+	UFUNCTION(Category = "Inventory")
 	void DetachItem(class UInventoryNode* ChildNode);
 
 	/**
@@ -97,4 +97,21 @@ private:
 	* Unpacks NetworkGraph locally to reproduce server version of inventory graph.
 	*/
 	void RefreshNetworkGraph_Client();
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory")
+	void K2_AttachItemToNode(class UInventoryNode* ParentNode, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, class UInventoryNode* ChildNode);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory")
+	void K2_DetachItem(class UInventoryNode* ChildNode);
+
+protected:
+
+	UFUNCTION(Server, Unreliable, Category = "Inventory|RPC")
+	void Server_AttachItemToNode(FGuid ParentNodeGuid, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, FGuid ChildNodeGuid);
+
+	UFUNCTION(Server, Unreliable, Category = "Inventory|RPC")
+	void Server_DetachItem(FGuid ChildNodeGuid);
+
 };

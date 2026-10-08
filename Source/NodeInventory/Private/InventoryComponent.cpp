@@ -304,3 +304,50 @@ void UInventoryComponent::RefreshNetworkGraph_Client()
 		}
 	}
 }
+
+void UInventoryComponent::K2_AttachItemToNode_Implementation(UInventoryNode* ParentNode, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, UInventoryNode* ChildNode)
+{
+	if (ParentNode == nullptr or ChildNode == nullptr)
+	{
+		return;
+	}
+
+	Server_AttachItemToNode(ParentNode->NodeGuid, GridIndex, TopLeftX, TopLeftY, bRotate, ChildNode->NodeGuid);
+}
+
+void UInventoryComponent::K2_DetachItem_Implementation(UInventoryNode* ChildNode)
+{
+	if (ChildNode == nullptr)
+	{
+		return;
+	}
+
+	Server_DetachItem(ChildNode->NodeGuid);
+}
+
+void UInventoryComponent::Server_AttachItemToNode_Implementation(FGuid ParentNodeGuid, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, FGuid ChildNodeGuid)
+{
+	TObjectPtr<UInventoryNode> ParentNode = nullptr;
+	if (TObjectPtr<UInventoryNode>* ParentNodePtr = NodeMap.Find(ParentNodeGuid))
+	{
+		ParentNode = *ParentNodePtr;
+	}
+	TObjectPtr<UInventoryNode> ChildNode = nullptr;
+	if (TObjectPtr<UInventoryNode>* ChildNodePtr = NodeMap.Find(ChildNodeGuid))
+	{
+		ChildNode = *ChildNodePtr;
+	}
+	
+	AttachItemToGrid(ParentNode, GridIndex, TopLeftX, TopLeftY, bRotate, ChildNode);
+}
+
+void UInventoryComponent::Server_DetachItem_Implementation(FGuid ChildNodeGuid)
+{
+	TObjectPtr<UInventoryNode> ChildNode = nullptr;
+	if (TObjectPtr<UInventoryNode>* ChildNodePtr = NodeMap.Find(ChildNodeGuid))
+	{
+		ChildNode = *ChildNodePtr;
+	}
+
+	DetachItem(ChildNode);
+}
