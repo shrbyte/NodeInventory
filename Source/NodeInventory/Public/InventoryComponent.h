@@ -51,7 +51,7 @@ public:
 	* @param ItemData Pointer to data asset, defined in editor.
 	* @return Pointer to newly created node.
 	*/
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Inventory")
 	class UInventoryNode* CreateNewNode(class UItemDataAsset* ItemData);
 
 	/**
@@ -148,7 +148,7 @@ public:
 	* @param bRotate bool, should item be rotated when placed.
 	* @param ChildNode InventoryNode(item) itself.
 	*/
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory", meta = (DisplayName = "⚡ Attach Item to Node (Server)"))
 	void K2_AttachItemToNode(class UInventoryNode* ParentNode, int32 GridIndex, int32 TopLeftX, int32 TopLeftY, bool bRotate, class UInventoryNode* ChildNode);
 
 	/**
@@ -158,7 +158,7 @@ public:
 	* 
 	* @param ChildNode InventoryNode(item) which should be detached.
 	*/
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Inventory", meta = (DisplayName = "⚡ Detach Item (Server)"))
 	void K2_DetachItem(class UInventoryNode* ChildNode);
 
 protected:
